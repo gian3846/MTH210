@@ -1,29 +1,38 @@
-# The correct function
-Myellipse <- function(a, b)
+# The correct function using Cauchy proposal
+# Scaled Cauchy is also correct with different point of maxima
+Mytdist <- function(v)
 {
+	# Proposal will be Cauchy
+	# f(x)/g(x) is maximized at x = +-1 
+
 	accept <- 0
-	count <- 0
-	prop <- numeric(length = 2)
+	try <- 0
+
+	logc <- dt(1, df = v, log = TRUE) - dcauchy(1, log = TRUE)
+
 	while(accept == 0)
 	{
-		count <- count + 1
-		prop[1] <- runif(1, min = -sqrt(a), max = sqrt(a))
-		prop[2] <- runif(1, min = -sqrt(b), max = sqrt(b))
+		try <- try + 1
+		U <- runif(1)
 
-		if(prop[1]^2/a + prop[2]^2/b <= 1)
+		propU <- runif(1)
+		prop <- tan(pi*(propU - .5))
+
+		log.ratio <- dt(prop, df = v, log = TRUE) - dcauchy(prop, log = TRUE) - logc
+
+		if(log(U) < log.ratio)
 		{
-			accept <- 1
+			return(c(prop, try))
 		}
 	}
-	return(c(prop, count))
 }
 
-# This is how I am checking
-reps <- 1e3
-samp <- matrix(0, nrow = reps, ncol = 3)
-for(r in 1:reps)
-{
-	samp[r, ] <- Myellipse(4, .25)
-}
-mean(samp[ ,3])
-plot(samp[, 1:2], type = "p", asp = 1)
+# Testing
+# v <- 10.5
+# x <- seq(-20, 20, length = 500)
+# out1 <- replicate(1e3, Mytdist(v))
+
+# plot(density(out1[1, ]), col = "blue")
+# lines(x, dt(x, df = v))
+
+
